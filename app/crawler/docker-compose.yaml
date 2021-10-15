@@ -1,0 +1,63 @@
+version: '3'
+services:
+  mongo:
+    image: mongo
+    restart: always
+    volumes:
+      - db:/Users/bgabbasov/ilyas/data/db
+    networks:
+      crawler:
+        aliases:
+          - ui_db
+          - crawler_db
+    ports:
+      - '27017:27017'
+  rabbit:
+    image: "rabbitmq:3-management"
+    hostname: "rabbit"
+    volumes:
+      - ./rabbit/data:/Users/bgabbasov/ilyas/data/rabbitmq:rw
+      - ./rabbit/definitions.json:/Users/bgabbasov/ilyas/data/definitions.json:ro
+      - ./rabbit/rabbitmq.config:/Users/bgabbasov/ilyas/data/rabbitmq.config:ro
+    networks:
+      crawler:
+        aliases:
+          - crawler_rabbit
+    ports:
+      - "4369:4369"
+      - "5671:5671"
+      - "5672:5672"
+      - "15671:15671"
+      - "15672:15672"
+    labels:
+      NAME: "rabbitmq"
+  crawler-ui:
+    image: search_engine_ui #  ${DOCKERHUBUSER}/crawler-ui:latest
+    hostname: "crawler_ui"
+    networks:
+      crawler:
+        aliases:
+          - crawler_ui
+    ports:
+      - '8000:8000'
+  crawler-app:
+    image: search-engine-crawler # ${DOCKERHUBUSER}/crawler-app:latest
+    hostname: "crawler_app"
+    depends_on:
+      - rabbit
+      - mongo
+    networks:
+      crawler:
+        aliases:
+          - crawler_app
+    environment:
+      #EXCLUDE_URLS: "https://forum.samusev.info"
+      URL: "https://vitkhab.github.io/search_engine_test_site/"
+    ports:
+      - '8001:8000'
+
+volumes:
+  db:
+
+networks:
+  crawler:
