@@ -1,0 +1,219 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rmq-deployment
+  labels:
+    app: rmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rmq
+  template:
+    metadata:
+      name: rmq
+      labels:
+        app: rmq
+    spec:
+      containers:
+      - image: rabbitmq:3.8.9-alpine
+        name: rmq
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: admin
+        - name: RABBITMQ_DEFAULT_PASS
+          value: admin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rmq
+  labels:
+    app: rmq
+spec:
+  ports:
+    - port: 5672
+      protocol: TCP
+      targetPort: 5672
+  selector:
+    app: rmq
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb-deployment
+  labels:
+    app: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      name: mongodb
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - image: mongo:3.2
+        name: mongodb
+        volumeMounts:
+        - name: mongo-persistent-storage
+          mountPath: /data/db
+      volumes:
+      - name: mongo-persistent-storage
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  labels:
+    app: mongodb
+spec:
+  ports:
+    - port: 27017
+      protocol: TCP
+      targetPort: 27017
+  selector:
+    app: mongodb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crawler-deployment
+  labels:
+    app: crawler
+spec:
+  selector:
+    matchLabels:
+      app: crawler
+  replicas: 1
+  template:
+    metadata:
+      name: crawler
+      labels:
+        app: crawler
+    spec:
+      containers:
+      - image: "cr.yandex/crp3i0t6u7tu1ddq94n8/ui:gitlab-a01c268d"
+        name: crawler
+        env:
+        - name: MONGO
+          value: mongodb
+        - name: MONGO_PORT
+          value: "27017"
+        - name: RMQ_HOST
+          value: 
+        - name: RMQ_QUEUE
+          value: my_queue
+        - name: RMQ_USERNAME
+          value: admin
+        - name: RMQ_PASSWORD
+          value: admin
+        - name: CHECK_INTERVAL
+          value: "300"
+        - name: EXCLUDE_URLS
+          value: 
+        - name: URL
+          value: "https://vitkhab.github.io/search_engine_test_site/"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: crawler-service
+spec:
+  selector:
+      app: crawler
+  ports:
+    - port: 80
+      targetPort: 8000
+  type: ClusterIP
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: crawler-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: "/$1"
+#     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+#     nginx.ingress.kubernetes.io/enable-cors: "true"
+# spec:
+#   ingressClassName: "private"
+#   rules:
+#   - host: crawler.ilyas.com
+#     http:
+#       paths:
+#       - path: /(.*)
+#         pathType: ImplementationSpecific
+#         backend:
+#           service:
+#             name: crawler-service
+#             port:
+#               number: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ui-deployment
+  labels:
+    app: ui
+spec:
+  selector:
+    matchLabels:
+      app: ui
+  replicas: 1
+  template:
+    metadata:
+      name: ui
+      labels:
+        app: ui
+    spec:
+      containers:
+      - name: ui
+        image: "cr.yandex/crp3i0t6u7tu1ddq94n8/ui:gitlab-a01c268d"
+        ports:
+          - containerPort: 8000
+        env:
+        - name: MONGO
+          value: 
+        - name: MONGO_PORT
+          value: "27017"
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ui-service
+spec:
+  selector:
+      app: ui
+  ports:
+    - port: 80
+      targetPort: 8000
+  type: ClusterIP
+---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: ui-ingress
+#   annotations:
+#     nginx.ingress.kubernetes.io/rewrite-target: "/$1"
+#     nginx.ingress.kubernetes.io/ssl-redirect: "false"
+#     nginx.ingress.kubernetes.io/enable-cors: "true"
+# spec:
+#   ingressClassName: "private"
+#   rules:
+#   - host: ui.ilyas.com
+#     http:
+#       paths:
+#       - path: /(.*)
+#         pathType: ImplementationSpecific
+#         backend:
+#           service:
+#             name: ui-service
+#             port:
+#               number: 80
+# 
+#   selector:
+#     app: SERVICE_NAME_VALUE

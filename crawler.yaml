@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crawler-deployment
+  labels:
+    app: crawler
+spec:
+  selector:
+    matchLabels:
+      app: crawler
+  replicas: 1
+  template:
+    metadata:
+      name: crawler
+      labels:
+        app: crawler
+    spec:
+      containers:
+      - image: "cr.yandex/crp3i0t6u7tu1ddq94n8/ui:a01c268d"
+        name: crawler
+        env:
+        - name: MONGO
+          value: mongodb
+        - name: MONGO_PORT
+          value: "27017"
+        - name: RMQ_HOST
+          value: 
+        - name: RMQ_QUEUE
+          value: my_queue
+        - name: RMQ_USERNAME
+          value: admin
+        - name: RMQ_PASSWORD
+          value: admin
+        - name: CHECK_INTERVAL
+          value: "300"
+        - name: EXCLUDE_URLS
+          value: 
+        - name: URL
+          value: "https://vitkhab.github.io/search_engine_test_site/"
