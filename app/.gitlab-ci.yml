@@ -36,7 +36,7 @@ deploy:
   stage: deploy
   script:
     - kubectl config set-cluster k8s --server="$KUBE_URL" --insecure-skip-tls-verify=true
-    - kubectl config set-credentials admin --token="$KUBE_TOKEN"
+    - kubectl config set-credentials admin --token="eyJhbGciOiJSUzI1NiIsImtpZCI6InA0bXU0M3dFUUZSYTJLRERUemFJN0ZSUnhRNDkwdkM2U0d5Qmg5c0JwTU0ifQ.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJnaXRsYWItYWRtaW4tdG9rZW4ta2twY3giLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoiZ2l0bGFiLWFkbWluIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiMmNlZjFjZmMtMjJhYi00OWEzLWEwNDMtOTYwNDkyNWNhYTQ1Iiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50Omt1YmUtc3lzdGVtOmdpdGxhYi1hZG1pbiJ9.Myr2MCmZQljdrj8CKR0hQuQymsVCT3icA1Va98YWwHnFTc293vOSjHEvX8xuqIJUM35DfSfcTPjBn4pjaE244lwTTT8WJw3Z6pGWsGtz8ypJDD26rgh8CBZvmDGsK1rprEI9rjSXnXcbaGJZ-CXhq_7bu4sZZ2rSwPKrbDYfx7HsJam0sTrZELj3aSap7-dCevHFA7UrZv7ouBwaWXN5nuGyBHXG_iJuLAWss5qdsVuZXCVjURlrLUJI1rY-ANTxTRAvxfltc9jw1e_RccckpU2VXJ31ifpJPSzR07yuzbkST9tS0Cm6ktQyrhKpbzWCoQGIovgI2_jbnKo2Iux_WQ"
     - kubectl config set-context default --cluster=k8s --user=admin
     - kubectl config use-context default
     - sed -i "s/__VERSION__/gitlab-$CI_COMMIT_SHORT_SHA/" k8s.yaml
